@@ -1,10 +1,30 @@
-figma.showUI(__html__, {width: 420, height: 160});
+figma.showUI(__html__, {width: 400, height: 160});
+
+let currentSelection = undefined;
 
 figma.ui.onmessage = msg => {
-  const findInString = (str, test) => {
-    const re = new RegExp(test);
-    const arr = str.match(re);
-    return arr && arr.length > 0 ? true : false;
+  const findInString = (str, data) => {
+    let [text, matchWord, matchCase, regEx] = data;
+
+    if (regEx) {
+      try {
+        const gi = matchCase ? 'g' : 'gi';
+        const re = new RegExp(text, gi);
+        const arr = str.match(re);
+        return arr && arr.length > 0 ? true : false;
+      } catch (err) {}
+    }
+
+    if (matchWord) {
+      str.split(' ').some(word => {
+        if (this.caseSensitive) return word === text;
+        else return word.toLowerCase() === text.toLowerCase();
+      });
+    } else if (matchCase) {
+      return str.includes(text);
+    }
+
+    return str.toLowerCase().includes(text.toLowerCase());
   };
 
   const setCharacters = async (node: TextNode, newText: string) => {
@@ -17,26 +37,76 @@ figma.ui.onmessage = msg => {
     });
   };
 
+  const findPredicate = n => {
+    return n.type === 'TEXT' && n.characters != undefined && findInString(n.characters, msg.data);
+  };
+
+  const escapeRegExp = string => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const replace = data => {
+    let [id, findText, replaceWith, matchWord, matchCase] = data;
+
+    const node = <TextNode>figma.getNodeById(id);
+    if (!node) return;
+
+    const text = node.characters;
+    const gi = matchCase ? 'g' : 'gi';
+
+    if (matchWord || matchCase) {
+      findText = escapeRegExp(findText);
+    }
+
+    try {
+      let re = new RegExp(findText, gi);
+      let newStr = text.replace(re, replaceWith);
+      setCharacters(node, newStr);
+    } catch (err) {}
+  };
+
   switch (msg.type) {
-    case 'get-text-objects':
-      const text = figma.currentPage.findAll(n => {
-        return n.type === 'TEXT' && n.characters != undefined && findInString(n.characters, msg.text);
+    case 'set-selection':
+      currentSelection = figma.currentPage.selection;
+      figma.ui.postMessage({
+        type: 'set-selection',
+        data: JSON.stringify(currentSelection.length),
       });
 
-      const items = text.map(e => {
+      break;
+    case 'get-text-objects':
+      let textNodes = [];
+
+      if (msg.data[4] && currentSelection) {
+        for (const node of currentSelection) {
+          if (node.type === 'FRAME') {
+            let nodesInFrame = node.findAll(findPredicate);
+            textNodes = [...nodesInFrame, ...textNodes];
+          }
+        }
+      } else {
+        textNodes = figma.currentPage.findAll(findPredicate);
+      }
+
+      textNodes = textNodes.sort((b, a) => {
+        if (a.y < b.y) return 1;
+        if (a.y > b.y) return -1;
+        if (a.x < b.x) return 1;
+        if (a.x > b.x) return -1;
+        return 1;
+      });
+
+      const nodes = textNodes.map(e => {
         return {characters: e['characters'], id: e.id};
       });
 
       figma.ui.postMessage({
         type: 'get-text-objects',
-        data: JSON.stringify(items),
+        data: JSON.stringify(nodes),
       });
       break;
     case 'replace':
-      const node = <TextNode>figma.getNodeById(msg.data[0]);
-      const re = new RegExp(msg.data[1]);
-      const str = node.characters.replace(re, msg.data[2]);
-      setCharacters(node, str);
+      replace(msg.data);
 
       break;
     case 'goto':
@@ -52,27 +122,6 @@ figma.ui.onmessage = msg => {
     default:
       break;
   }
-
-  //   if (msg.type === 'create-rectangles') {
-  //     const nodes = [];
-
-  //     for (let i = 0; i < msg.count; i++) {
-  //       const rect = figma.createRectangle();
-  //       rect.x = i * 150;
-  //       rect.fills = [{type: 'SOLID', color: {r: 1, g: 0.5, b: 0}}];
-  //       figma.currentPage.appendChild(rect);
-  //       nodes.push(rect);
-  //     }
-
-  //     figma.currentPage.selection = nodes;
-  //     figma.viewport.scrollAndZoomIntoView(nodes);
-
-  //     // This is how figma responds back to the ui
-  //     figma.ui.postMessage({
-  //       type: 'create-rectangles',
-  //       message: `Created ${msg.count} Rectangles`,
-  //     });
-  //   }
 
   //   figma.closePlugin();
 };

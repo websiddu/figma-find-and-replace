@@ -22,9 +22,20 @@
   left: 0;
   right: 0;
   padding: 12px;
-  display: flex;
-  justify-content: flex-end;
   margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post-fix {
+  display: flex;
+  font-size: var(--font-size-small);
+  color: #555;
+  font-weight: var(--font-weight-normal);
+  font-feature-settings: 'tnum';
+  min-height: 36px;
+  align-items: center;
 }
 
 .divider {

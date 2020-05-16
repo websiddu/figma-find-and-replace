@@ -7,6 +7,7 @@ const App = ({}) => {
   const findInput = React.useRef<HTMLInputElement>(undefined);
   const [textNodes, setTextNodes] = React.useState([]);
   const [currentNode, setCurrentNode] = React.useState(-1);
+  const [isDirty, setIsDirty] = React.useState(false);
 
   const [matchWord, setMatchWord] = React.useState(false);
   const [matchCase, setMatchCase] = React.useState(false);
@@ -44,6 +45,10 @@ const App = ({}) => {
     move();
   }, [currentNode, textNodes]);
 
+  React.useEffect(() => {
+    findText();
+  }, [matchCase, matchWord, regEx, inSelection]);
+
   const findText = () => {
     const text = findInput.current.value;
 
@@ -53,13 +58,28 @@ const App = ({}) => {
       return;
     }
 
-    parent.postMessage({pluginMessage: {type: 'get-text-objects', text}}, '*');
+    let data = [text, matchWord, matchCase, regEx, inSelection, preserveCase];
+    setIsDirty(true);
+    parent.postMessage({pluginMessage: {type: 'get-text-objects', data}}, '*');
+  };
+
+  const replace = id => {
+    let data = [
+      id,
+      findInput.current.value,
+      replaceInput.current.value,
+      matchWord,
+      matchCase,
+      regEx,
+      inSelection,
+      preserveCase,
+    ];
+    parent.postMessage({pluginMessage: {type: 'replace', data}}, '*');
   };
 
   const replaceCurrent = () => {
     if (textNodes.length === 0) return;
-    let data = [textNodes[currentNode].id, findInput.current.value, replaceInput.current.value];
-    parent.postMessage({pluginMessage: {type: 'replace', data}}, '*');
+    replace(textNodes[currentNode].id);
   };
 
   const toast = msg => {
@@ -76,8 +96,7 @@ const App = ({}) => {
 
   const replaceAll = () => {
     textNodes.forEach(e => {
-      let data = [e.id, findInput.current.value, replaceInput.current.value];
-      parent.postMessage({pluginMessage: {type: 'replace', data}}, '*');
+      replace(e.id);
     });
   };
 
@@ -104,6 +123,25 @@ const App = ({}) => {
     else setCurrentNode(currentNode - 1);
   };
 
+  const setSelection = () => {
+    // selectionNodes
+    setInSelection(!inSelection);
+    if (!inSelection) {
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'set-selection',
+            data: inSelection,
+          },
+        },
+        '*'
+      );
+      toast('Finding within current selection');
+    } else {
+      toast('Finding in Current Page');
+    }
+  };
+
   return (
     <div className="page">
       <div className="row close">
@@ -116,9 +154,9 @@ const App = ({}) => {
               placeholder="Find"
               onChange={findText}
             ></input>
-            <div className="post-fix">
+            {/* <div className="post-fix">
               {textNodes.length > 0 && <span>{currentNode + 1} of&nbsp;</span>} {textNodes.length}
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="col">
@@ -150,29 +188,6 @@ const App = ({}) => {
                 <div className="icon icon--regex"></div>
               </button>
             </Tippy>
-
-            <div className="divider"></div>
-            <Tippy content="Previous match" delay={[500, 100]}>
-              <button
-                className="icon-button nf"
-                onClick={prev}
-                tabIndex={6}
-                disabled={textNodes.length > 0 ? false : true}
-              >
-                <div className="icon icon--back"></div>
-              </button>
-            </Tippy>
-
-            <Tippy content="Next match" delay={[500, 100]}>
-              <button
-                className="icon-button nf"
-                onClick={next}
-                tabIndex={7}
-                disabled={textNodes.length > 0 ? false : true}
-              >
-                <div className="icon icon--forward"></div>
-              </button>
-            </Tippy>
           </div>
         </div>
       </div>
@@ -183,37 +198,76 @@ const App = ({}) => {
         <div className="col">
           <div className="row actions">
             <Tippy content="Find in selection" delay={[500, 100]}>
-              <button
-                className={'icon-button' + (inSelection ? ' icon-button--selected' : '')}
-                onClick={() => setInSelection(!inSelection)}
-              >
-                <div className="icon icon--corners"></div>
+              <button className={'icon-button' + (inSelection ? ' icon-button--selected' : '')} onClick={setSelection}>
+                <div className="icon icon--frame"></div>
               </button>
             </Tippy>
-
-            <Tippy content="Preserve case" delay={[500, 100]}>
-              <button
-                className={'icon-button' + (preserveCase ? ' icon-button--selected' : '')}
-                onClick={() => setPreserveCase(!preserveCase)}
-              >
-                <div className="icon icon--preserve-case"></div>
-              </button>
-            </Tippy>
+            <div style={{display: 'none'}}>
+              <Tippy content="Preserve case" delay={[500, 100]}>
+                <button
+                  className={'icon-button' + (preserveCase ? ' icon-button--selected' : '')}
+                  onClick={() => setPreserveCase(!preserveCase)}
+                >
+                  <div className="icon icon--preserve-case"></div>
+                </button>
+              </Tippy>
+            </div>
           </div>
         </div>
       </div>
       <div className="row footer">
-        <button
-          className="button button--secondary"
-          onClick={replaceCurrent}
-          disabled={textNodes.length > 0 ? false : true}
-        >
-          Replace
-        </button>
-        &nbsp;&nbsp;&nbsp;
-        <button className="button button--primary" onClick={replaceAll} disabled={textNodes.length > 0 ? false : true}>
-          Replace all
-        </button>
+        <div className="actions">
+          {textNodes.length > 0 && (
+            <div className="actions">
+              <div className="post-fix">
+                {textNodes.length > 0 && (
+                  <span>
+                    {currentNode + 1} of {textNodes.length}
+                  </span>
+                )}
+              </div>
+              <Tippy content="Previous match" delay={[500, 100]}>
+                <button
+                  className="icon-button nf"
+                  onClick={prev}
+                  tabIndex={6}
+                  disabled={textNodes.length > 0 ? false : true}
+                >
+                  <div className="icon icon--back"></div>
+                </button>
+              </Tippy>
+              <Tippy content="Next match" delay={[500, 100]}>
+                <button
+                  className="icon-button nf"
+                  onClick={next}
+                  tabIndex={7}
+                  disabled={textNodes.length > 0 ? false : true}
+                >
+                  <div className="icon icon--forward"></div>
+                </button>
+              </Tippy>
+            </div>
+          )}
+
+          {textNodes.length == 0 && isDirty && <div className="post-fix">No matches found</div>}
+        </div>
+        <div className="actions">
+          <button
+            className="button button--secondary"
+            onClick={replaceCurrent}
+            disabled={textNodes.length > 0 ? false : true}
+          >
+            Replace
+          </button>
+          &nbsp;&nbsp;&nbsp;
+          <button
+            className="button button--primary"
+            onClick={replaceAll}
+            disabled={textNodes.length > 0 ? false : true}
+          >
+            Replace all
+          </button>
+        </div>
       </div>
     </div>
   );

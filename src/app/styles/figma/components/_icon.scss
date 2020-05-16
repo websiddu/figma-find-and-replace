@@ -1,0 +1,297 @@
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  min-width: var(--size-medium);
+  min-height: var(--size-medium);
+  font-family: var(--font-stack);
+  font-size: var(--font-size-xsmall);
+  user-select: none;
+  background-position: center center;
+
+  //rotate the icon in an infinit loop, ex: for a spinner
+  &--spin {
+    animation: rotating 1s linear infinite;
+  }
+  @keyframes rotating {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  //icons
+  &--adjust {
+    background-image: url('../assets/icons/adjust.svg');
+  }
+  &--alert {
+    background-image: url('../assets/icons/alert.svg');
+  }
+  &--angle {
+    background-image: url('../assets/icons/angle.svg');
+  }
+  &--arrow-left-right {
+    background-image: url('../assets/icons/arrow-left-right.svg');
+  }
+  &--up-down {
+    background-image: url('../assets/icons/arrow-up-down.svg');
+  }
+  &--auto-layout-horizontal {
+    background-image: url('../assets/icons/auto-layout-horizontal.svg');
+  }
+  &--auto-layout-vertical {
+    background-image: url('../assets/icons/auto-layout-vertical.svg');
+  }
+  &--back {
+    background-image: url('../assets/icons/back.svg');
+  }
+  &--blend-empty {
+    background-image: url('../assets/icons/blend-empty.svg');
+  }
+  &--blend {
+    background-image: url('../assets/icons/blend.svg');
+  }
+  &--break {
+    background-image: url('../assets/icons/break.svg');
+  }
+  &--caret-down {
+    background-image: url('../assets/icons/caret-down.svg');
+  }
+  &--caret-left {
+    background-image: url('../assets/icons/caret-left.svg');
+  }
+  &--caret-right {
+    background-image: url('../assets/icons/caret-right.svg');
+  }
+  &--caret-up {
+    background-image: url('../assets/icons/caret-up.svg');
+  }
+  &--check {
+    background-image: url('../assets/icons/check.svg');
+  }
+  &--close {
+    background-image: url('../assets/icons/close.svg');
+  }
+  &--component {
+    background-image: url('../assets/icons/component.svg');
+  }
+  &--corner-radius {
+    background-image: url('../assets/icons/corner-radius.svg');
+  }
+  &--corners {
+    background-image: url('../assets/icons/corners.svg');
+  }
+  &--distribute-horizontal-spacing {
+    background-image: url('../assets/icons/distribute-horizontal-spacing.svg');
+  }
+  &--distribute-vertical-spacing {
+    background-image: url('../assets/icons/distribute-vertical-spacing.svg');
+  }
+  &--draft {
+    background-image: url('../assets/icons/draft.svg');
+  }
+  &--effects {
+    background-image: url('../assets/icons/effects.svg');
+  }
+  &--ellipses {
+    background-image: url('../assets/icons/ellipses.svg');
+  }
+  &--eyedropper {
+    background-image: url('../assets/icons/eyedropper.svg');
+  }
+  &--forward {
+    background-image: url('../assets/icons/forward.svg');
+  }
+  &--frame {
+    background-image: url('../assets/icons/frame.svg');
+  }
+  &--group {
+    background-image: url('../assets/icons/group.svg');
+  }
+  &--hidden {
+    background-image: url('../assets/icons/hidden.svg');
+  }
+  &--horizontal-padding {
+    background-image: url('../assets/icons/horizontal-padding.svg');
+  }
+  &--hyperlink {
+    background-image: url('../assets/icons/hyperlink.svg');
+  }
+  &--image {
+    background-image: url('../assets/icons/image.svg');
+  }
+  &--instance {
+    background-image: url('../assets/icons/instance.svg');
+  }
+  &--key {
+    background-image: url('../assets/icons/key.svg');
+  }
+  &--layout-align-bottom {
+    background-image: url('../assets/icons/layout-align-bottom.svg');
+  }
+  &--align-horizontal-centers {
+    background-image: url('../assets/icons/layout-align-horizontal-centers.svg');
+  }
+  &--align-left {
+    background-image: url('../assets/icons/layout-align-left.svg');
+  }
+  &--align-right {
+    background-image: url('../assets/icons/layout-align-right.svg');
+  }
+  &--align-top {
+    background-image: url('../assets/icons/layout-align-top.svg');
+  }
+  &--align-vertical-centers {
+    background-image: url('../assets/icons/layout-align-vertical-centers.svg');
+  }
+  &--layout-grid-columns {
+    background-image: url('../assets/icons/layout-grid-columns.svg');
+  }
+  &--layout-grid-rows {
+    background-image: url('../assets/icons/layout-grid-rows.svg');
+  }
+  &--layout-grid-uniform {
+    background-image: url('../assets/icons/layout-grid-uniform.svg');
+  }
+  &--library {
+    background-image: url('../assets/icons/library.svg');
+  }
+  &--link-broken {
+    background-image: url('../assets/icons/link-broken.svg');
+  }
+  &--link-connected {
+    background-image: url('../assets/icons/link-connected.svg');
+  }
+  &--list-detailed {
+    background-image: url('../assets/icons/list-detailed.svg');
+  }
+  &--list-tile {
+    background-image: url('../assets/icons/list-tile.svg');
+  }
+  &--list {
+    background-image: url('../assets/icons/list.svg');
+  }
+  &--lock-off {
+    background-image: url('../assets/icons/lock-off.svg');
+  }
+  &--lock-on {
+    background-image: url('../assets/icons/lock-on.svg');
+  }
+  &--minus {
+    background-image: url('../assets/icons/minus.svg');
+  }
+  &--play {
+    background-image: url('../assets/icons/play.svg');
+  }
+  &--plus {
+    background-image: url('../assets/icons/plus.svg');
+  }
+  &--random {
+    background-image: url('../assets/icons/random.svg');
+  }
+  &--recent {
+    background-image: url('../assets/icons/recent.svg');
+  }
+  &--resize-to-fit {
+    background-image: url('../assets/icons/resize-to-fit.svg');
+  }
+  &--resolve-filled {
+    background-image: url('../assets/icons/resolve-filled.svg');
+  }
+  &--resolve {
+    background-image: url('../assets/icons/resolve.svg');
+  }
+  &--reverse {
+    background-image: url('../assets/icons/reverse.svg');
+  }
+  &--search-large {
+    background-image: url('../assets/icons/search-large.svg');
+  }
+  &--search {
+    background-image: url('../assets/icons/search.svg');
+  }
+  &--settings {
+    background-image: url('../assets/icons/settings.svg');
+  }
+  &--share {
+    background-image: url('../assets/icons/share.svg');
+  }
+  &--smiley {
+    background-image: url('../assets/icons/smiley.svg');
+  }
+  &--sort-alpha-asc {
+    background-image: url('../assets/icons/sort-alpha-asc.svg');
+  }
+  &--sort-alpha-dsc {
+    background-image: url('../assets/icons/sort-alpha-dsc.svg');
+  }
+  &--sort-top-bottom {
+    background-image: url('../assets/icons/sort-top-bottom.svg');
+  }
+  &--spacing {
+    background-image: url('../assets/icons/spacing.svg');
+  }
+  &--spinner {
+    background-image: url('../assets/icons/spinner.svg');
+  }
+  &--star-off {
+    background-image: url('../assets/icons/star-off.svg');
+  }
+  &--star-on {
+    background-image: url('../assets/icons/star-on.svg');
+  }
+  &--stroke-weight {
+    background-image: url('../assets/icons/stroke-weight.svg');
+  }
+  &--styles {
+    background-image: url('../assets/icons/styles.svg');
+  }
+  &--swap {
+    background-image: url('../assets/icons/swap.svg');
+  }
+  &--theme {
+    background-image: url('../assets/icons/theme.svg');
+  }
+  &--tidy-up-grid {
+    background-image: url('../assets/icons/tidy-up-grid.svg');
+  }
+  &--tidy-up-list-horizontal {
+    background-image: url('../assets/icons/tidy-up-list-horizontal.svg');
+  }
+  &--tidy-up-list-vertical {
+    background-image: url('../assets/icons/tidy-up-list-vertical.svg');
+  }
+  &--timer {
+    background-image: url('../assets/icons/timer.svg');
+  }
+  &--trash {
+    background-image: url('../assets/icons/trash.svg');
+  }
+  &--vertical-padding {
+    background-image: url('../assets/icons/vertical-padding.svg');
+  }
+  &--visible {
+    background-image: url('../assets/icons/visible.svg');
+  }
+  &--warning-large {
+    background-image: url('../assets/icons/warning-large.svg');
+  }
+  &--warning {
+    background-image: url('../assets/icons/warning.svg');
+  }
+  &--match-word {
+    background-image: url('../assets/icons/match-word.svg');
+  }
+  &--match-case {
+    background-image: url('../assets/icons/match-case.svg');
+  }
+  &--preserve-case {
+    background-image: url('../assets/icons/preserve-case.svg');
+  }
+  &--regex {
+    background-image: url('../assets/icons/regex.svg');
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Find and Replace",
+  "id": "843248077507763656",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html"
+}

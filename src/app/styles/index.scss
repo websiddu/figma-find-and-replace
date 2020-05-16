@@ -1,0 +1,44 @@
+@import 'figma';
+
+.page {
+  padding: 12px;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.col {
+  &.f {
+    flex: 1;
+    margin-right: 8px;
+  }
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: #eee;
+  margin: 0 12px;
+}
+
+.actions {
+  margin: 0 2px;
+  display: flex;
+  align-items: center;
+  .icon-button {
+    margin: 0 2px;
+  }
+}

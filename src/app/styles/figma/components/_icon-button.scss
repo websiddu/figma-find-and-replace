@@ -16,11 +16,20 @@
   &:hover {
     background: var(--hover-fill);
   }
-  &:active,
+  &:active {
+    border: 2px solid var(--blue);
+  }
+
   &:focus {
     border: 2px solid var(--blue);
     outline: none;
   }
+
+  // &.nf {
+  //   &:focus {
+  //     border-color: transparent;
+  //   }
+  // }
 
   &--selected {
     background-color: var(--blue);
@@ -28,7 +37,11 @@
     &:hover {
       background-color: var(--blue);
     }
-    &:active,
+
+    &:active {
+      border: 2px solid var(--black3);
+    }
+
     &:focus {
       border: 2px solid var(--black3);
     }

@@ -1,4 +1,3 @@
-// import * as React from 'react';
 import * as React from 'react';
 import Tippy from '@tippyjs/react';
 import '../styles/index.scss';
@@ -83,7 +82,6 @@ const App = ({}) => {
   };
 
   const move = () => {
-    console.log(textNodes, currentNode);
     if (!textNodes[currentNode]) return;
     parent.postMessage(
       {
@@ -111,7 +109,13 @@ const App = ({}) => {
       <div className="row close">
         <div className="col f">
           <div className="input">
-            <input className="input__field pfix" ref={findRef} placeholder="Find" onChange={findText}></input>
+            <input
+              tabIndex={1}
+              className="input__field pfix"
+              ref={findRef}
+              placeholder="Find"
+              onChange={findText}
+            ></input>
             <div className="post-fix">
               {textNodes.length > 0 && <span>{currentNode + 1} of&nbsp;</span>} {textNodes.length}
             </div>
@@ -123,6 +127,7 @@ const App = ({}) => {
               <button
                 className={'icon-button' + (matchWord ? ' icon-button--selected' : '')}
                 onClick={() => setMatchWord(!matchWord)}
+                tabIndex={3}
               >
                 <div className="icon icon--match-word"></div>
               </button>
@@ -131,6 +136,7 @@ const App = ({}) => {
               <button
                 className={'icon-button' + (matchCase ? ' icon-button--selected' : '')}
                 onClick={() => setMatchCase(!matchCase)}
+                tabIndex={4}
               >
                 <div className="icon icon--match-case"></div>
               </button>
@@ -139,6 +145,7 @@ const App = ({}) => {
               <button
                 className={'icon-button' + (regEx ? ' icon-button--selected' : '')}
                 onClick={() => setRegEx(!regEx)}
+                tabIndex={5}
               >
                 <div className="icon icon--regex"></div>
               </button>
@@ -146,22 +153,32 @@ const App = ({}) => {
 
             <div className="divider"></div>
             <Tippy content="Previous match" delay={[500, 100]}>
-              <div className="icon-button" onClick={prev}>
+              <button
+                className="icon-button nf"
+                onClick={prev}
+                tabIndex={6}
+                disabled={textNodes.length > 0 ? false : true}
+              >
                 <div className="icon icon--back"></div>
-              </div>
+              </button>
             </Tippy>
 
             <Tippy content="Next match" delay={[500, 100]}>
-              <div className="icon-button" onClick={next}>
+              <button
+                className="icon-button nf"
+                onClick={next}
+                tabIndex={7}
+                disabled={textNodes.length > 0 ? false : true}
+              >
                 <div className="icon icon--forward"></div>
-              </div>
+              </button>
             </Tippy>
           </div>
         </div>
       </div>
       <div className="row">
         <div className="col f">
-          <input className="input__field" ref={replaceRef} placeholder="Replace"></input>
+          <input className="input__field" tabIndex={2} ref={replaceRef} placeholder="Replace"></input>
         </div>
         <div className="col">
           <div className="row actions">

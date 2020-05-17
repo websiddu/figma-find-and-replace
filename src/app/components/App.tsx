@@ -1,7 +1,7 @@
 import * as React from 'react';
+import debounce from 'lodash-es/debounce';
 import Tippy from '@tippyjs/react';
 import '../styles/index.scss';
-import {debounce} from 'lodash';
 
 const App = ({}) => {
   const replaceInput = React.useRef<HTMLInputElement>(undefined);

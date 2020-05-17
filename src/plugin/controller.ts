@@ -16,7 +16,7 @@ figma.ui.onmessage = msg => {
     }
 
     if (matchWord) {
-      str.split(' ').some(word => {
+      return str.split(' ').some(word => {
         if (this.caseSensitive) return word === text;
         else return word.toLowerCase() === text.toLowerCase();
       });

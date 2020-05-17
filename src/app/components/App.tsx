@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Tippy from '@tippyjs/react';
 import '../styles/index.scss';
+import {debounce} from 'lodash';
 
 const App = ({}) => {
   const replaceInput = React.useRef<HTMLInputElement>(undefined);
@@ -49,7 +50,7 @@ const App = ({}) => {
     findText();
   }, [matchCase, matchWord, regEx, inSelection]);
 
-  const findText = () => {
+  const findText = debounce(() => {
     const text = findInput.current.value;
 
     if (text === '') {
@@ -61,7 +62,7 @@ const App = ({}) => {
     let data = [text, matchWord, matchCase, regEx, inSelection, preserveCase];
     setIsDirty(true);
     parent.postMessage({pluginMessage: {type: 'get-text-objects', data}}, '*');
-  };
+  }, 500);
 
   const replace = id => {
     let data = [

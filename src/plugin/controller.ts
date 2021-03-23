@@ -102,8 +102,6 @@ figma.ui.onmessage = msg => {
     case 'get-text-objects':
       clearAllTimers();
 
-      console.log(msg.data);
-
       let children = figma.currentPage.children;
       if (msg.data[4]) {
         children = figma.currentPage.selection;

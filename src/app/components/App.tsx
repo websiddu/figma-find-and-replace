@@ -51,8 +51,6 @@ const App = ({}) => {
       }
 
       if (type === 'replace') {
-        console.log(data);
-
         setTextNodes(oldValues => {
           let values = [...oldValues];
           values.splice(values.indexOf(data), 1);
@@ -69,7 +67,6 @@ const App = ({}) => {
   }, [currentNode]);
 
   React.useEffect(() => {
-    console.log('found at-least one');
     if (foundAtLeastOne == true) setCurrentNode(0);
     else setCurrentNode(-1);
   }, [foundAtLeastOne]);

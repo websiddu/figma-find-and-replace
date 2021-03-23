@@ -155,8 +155,6 @@ const App = ({}) => {
   };
 
   const next = () => {
-    console.log('----');
-    console.log(textNodes);
     if (currentNode === textNodes.length - 1) setCurrentNode(0);
     else setCurrentNode(currentNode + 1);
   };

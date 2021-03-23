@@ -1,6 +1,7 @@
 figma.showUI(__html__, {width: 400, height: 160});
 
 let currentSelection = undefined;
+let timers = [];
 
 figma.ui.onmessage = msg => {
   const findInString = (str, data) => {
@@ -33,7 +34,14 @@ figma.ui.onmessage = msg => {
 
     figma.ui.postMessage({
       type: 'replace',
-      data: true,
+      data: node.id,
+    });
+  };
+
+  const postMessage = data => {
+    figma.ui.postMessage({
+      type: 'update-text-objects',
+      data: JSON.stringify(data),
     });
   };
 
@@ -43,6 +51,12 @@ figma.ui.onmessage = msg => {
 
   const escapeRegExp = string => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const clearAllTimers = () => {
+    for (var i = 0; i < timers.length; i++) {
+      clearTimeout(timers[i]);
+    }
   };
 
   const replace = data => {
@@ -65,6 +79,17 @@ figma.ui.onmessage = msg => {
     } catch (err) {}
   };
 
+  const findAll = node => {
+    let promise = new Promise((resolve, reject) => {
+      let nodes = node.findAll(findPredicate);
+      nodes = nodes.map(e => e.id);
+      if (nodes) resolve(nodes);
+      else reject([]);
+    });
+
+    return promise;
+  };
+
   switch (msg.type) {
     case 'set-selection':
       currentSelection = figma.currentPage.selection;
@@ -75,39 +100,46 @@ figma.ui.onmessage = msg => {
 
       break;
     case 'get-text-objects':
-      let textNodes = [];
+      clearAllTimers();
 
-      if (msg.data[4] && currentSelection) {
-        for (const node of currentSelection) {
-          if (node.type === 'FRAME') {
-            let nodesInFrame = node.findAll(findPredicate);
-            textNodes = [...nodesInFrame, ...textNodes];
-          }
-        }
-      } else {
-        textNodes = figma.currentPage.findAll(findPredicate);
+      console.log(msg.data);
+
+      let children = figma.currentPage.children;
+      if (msg.data[4]) {
+        children = figma.currentPage.selection;
       }
 
-      textNodes = textNodes.sort((b, a) => {
-        if (a.y < b.y) return 1;
-        if (a.y > b.y) return -1;
-        if (a.x < b.x) return 1;
-        if (a.x > b.x) return -1;
-        return 1;
-      });
+      const delayedFind = node => {
+        findAll(node).then((nodes: any) => {
+          postMessage(nodes);
+        });
+      };
 
-      const nodes = textNodes.map(e => {
-        return {characters: e['characters'], id: e.id};
-      });
+      // const NODE_TYPES = ['INSTANCE', 'FRAME', 'GROUP'];
+      const NODE_TYPES_GROUP = ['INSTANCE', 'GROUP', 'COMPONENT', 'FRAME'];
+
+      for (let i = 0; i < children.length; i++) {
+        let node = children[i];
+        if (findPredicate(node)) postMessage([node.id]);
+        if (NODE_TYPES_GROUP.includes(node.type)) {
+          const subChildren = node['children'];
+          for (let j = 0; j < subChildren.length; j++) {
+            const subnode = subChildren[j];
+            if (findPredicate(subnode)) postMessage([subnode.id]);
+            if (NODE_TYPES_GROUP.includes(subnode.type)) {
+              delayedFind(subnode);
+            }
+          }
+        }
+      }
 
       figma.ui.postMessage({
-        type: 'get-text-objects',
-        data: JSON.stringify(nodes),
+        type: 'done',
+        data: JSON.stringify({done: true}),
       });
       break;
     case 'replace':
       replace(msg.data);
-
       break;
     case 'goto':
       let nodeToGo = <SceneNode>figma.getNodeById(msg.data);

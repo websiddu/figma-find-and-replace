@@ -9,6 +9,8 @@ const App = ({}) => {
   const [textNodes, setTextNodes] = React.useState([]);
   const [currentNode, setCurrentNode] = React.useState(-1);
   const [isDirty, setIsDirty] = React.useState(false);
+  const [foundAtLeastOne, setFoundAtLeastOne] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const [matchWord, setMatchWord] = React.useState(false);
   const [matchCase, setMatchCase] = React.useState(false);
@@ -28,6 +30,19 @@ const App = ({}) => {
   React.useEffect(() => {
     window.onmessage = async event => {
       const {type, data} = event.data.pluginMessage;
+
+      if (type === 'update-text-objects') {
+        let newNodes = JSON.parse(data);
+        setTextNodes(nodes => [...nodes, ...newNodes]);
+        if (newNodes.length > 0) {
+          setFoundAtLeastOne(true);
+        }
+      }
+
+      if (type === 'done') {
+        setIsLoading(false);
+      }
+
       if (type === 'get-text-objects') {
         let d = JSON.parse(data);
         setTextNodes(d);
@@ -36,7 +51,14 @@ const App = ({}) => {
       }
 
       if (type === 'replace') {
-        findText();
+        console.log(data);
+
+        setTextNodes(oldValues => {
+          let values = [...oldValues];
+          values.splice(values.indexOf(data), 1);
+          return values;
+        });
+
         toast('Replaced!');
       }
     };
@@ -44,18 +66,36 @@ const App = ({}) => {
 
   React.useEffect(() => {
     move();
-  }, [currentNode, textNodes]);
+  }, [currentNode]);
+
+  React.useEffect(() => {
+    console.log('found at-least one');
+    if (foundAtLeastOne == true) setCurrentNode(0);
+    else setCurrentNode(-1);
+  }, [foundAtLeastOne]);
+
+  React.useEffect(() => {
+    if (textNodes.length == 0) {
+    }
+    setCurrentNode(0);
+    move();
+  }, [textNodes]);
 
   React.useEffect(() => {
     findText();
   }, [matchCase, matchWord, regEx, inSelection]);
 
-  const findText = debounce(() => {
+  const findText = debounce(function() {
     const text = findInput.current.value;
 
+    setTextNodes([]);
+    setCurrentNode(-1);
+    setFoundAtLeastOne(false);
+    setIsLoading(true);
+
     if (text === '') {
-      setCurrentNode(-1);
-      setTextNodes([]);
+      setIsDirty(false);
+      setIsLoading(false);
       return;
     }
 
@@ -80,7 +120,7 @@ const App = ({}) => {
 
   const replaceCurrent = () => {
     if (textNodes.length === 0) return;
-    replace(textNodes[currentNode].id);
+    replace(textNodes[currentNode]);
   };
 
   const toast = msg => {
@@ -97,7 +137,7 @@ const App = ({}) => {
 
   const replaceAll = () => {
     textNodes.forEach(e => {
-      replace(e.id);
+      replace(e);
     });
   };
 
@@ -107,7 +147,7 @@ const App = ({}) => {
       {
         pluginMessage: {
           type: 'goto',
-          data: textNodes[currentNode].id,
+          data: textNodes[currentNode],
         },
       },
       '*'
@@ -115,6 +155,8 @@ const App = ({}) => {
   };
 
   const next = () => {
+    console.log('----');
+    console.log(textNodes);
     if (currentNode === textNodes.length - 1) setCurrentNode(0);
     else setCurrentNode(currentNode + 1);
   };
@@ -218,8 +260,8 @@ const App = ({}) => {
       </div>
       <div className="row footer">
         <div className="actions">
-          {textNodes.length > 0 && (
-            <div className="actions">
+          {foundAtLeastOne && textNodes.length > 0 && (
+            <div className="pagination">
               <div className="post-fix">
                 {textNodes.length > 0 && (
                   <span>
@@ -250,7 +292,8 @@ const App = ({}) => {
             </div>
           )}
 
-          {textNodes.length == 0 && isDirty && <div className="post-fix">No matches found</div>}
+          {!foundAtLeastOne && isDirty && !isLoading && <div className="post-fix">No matches found</div>}
+          {isLoading && !foundAtLeastOne && <div className="post-fix">Searching...</div>}
         </div>
         <div className="actions">
           <button

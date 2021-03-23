@@ -53,3 +53,14 @@
     margin: 0 2px;
   }
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.footer {
+  .actions {
+    min-height: 36px;
+  }
+}

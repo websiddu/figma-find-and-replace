@@ -2,94 +2,108 @@ figma.showUI(__html__, {width: 400, height: 160});
 
 let currentSelection = undefined;
 let timers = [];
+let timer = undefined;
+
+const findInString = (str, data) => {
+  let [text, matchWord, matchCase, regEx] = data;
+
+  if (regEx) {
+    try {
+      const gi = matchCase ? 'g' : 'gi';
+      const re = new RegExp(text, gi);
+      const arr = str.match(re);
+      return arr && arr.length > 0 ? true : false;
+    } catch (err) {}
+  }
+
+  if (matchWord) {
+    return str.split(' ').some(word => {
+      if (this.caseSensitive) return word === text;
+      else return word.toLowerCase() === text.toLowerCase();
+    });
+  } else if (matchCase) {
+    return str.includes(text);
+  }
+
+  return str.toLowerCase().includes(text.toLowerCase());
+};
+
+const setCharacters = async (node: TextNode, newText: string) => {
+  await figma.loadFontAsync(node.getRangeFontName(0, 1) as FontName);
+  node.characters = newText;
+
+  figma.ui.postMessage({
+    type: 'replace',
+    data: node.id,
+  });
+};
+
+const escapeRegExp = string => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+const replace = data => {
+  let [id, findText, replaceWith, matchWord, matchCase] = data;
+
+  const node = <TextNode>figma.getNodeById(id);
+  if (!node) return;
+
+  const text = node.characters;
+  const gi = matchCase ? 'g' : 'gi';
+
+  if (matchWord || matchCase) {
+    findText = escapeRegExp(findText);
+  }
+
+  try {
+    let re = new RegExp(findText, gi);
+    let newStr = text.replace(re, replaceWith);
+    setCharacters(node, newStr);
+  } catch (err) {}
+};
+
+// This is a generator that recursively produces all the nodes in subtree
+// starting at the given node
+function* walkTree(node) {
+  yield node;
+  let children = node.children;
+  if (children) {
+    for (let child of children) {
+      yield* walkTree(child);
+    }
+  }
+}
+
+function searchFor(query, data) {
+  query = query.toLowerCase();
+  let walker = walkTree(figma.currentPage);
+
+  function processOnce() {
+    let results = [];
+    let count = 0;
+    let done = true;
+    let res;
+    while (!(res = walker.next()).done) {
+      let node = res.value;
+      if (node.type === 'TEXT') {
+        if (findInString(node.characters, data)) {
+          results.push(node.id);
+        }
+      }
+      if (++count === 1000) {
+        done = false;
+        timer = setTimeout(processOnce, 20);
+        break;
+      }
+    }
+
+    figma.ui.postMessage({type: 'update-results', data: {query, results, done}});
+  }
+
+  processOnce();
+}
 
 figma.ui.onmessage = msg => {
-  const findInString = (str, data) => {
-    let [text, matchWord, matchCase, regEx] = data;
-
-    if (regEx) {
-      try {
-        const gi = matchCase ? 'g' : 'gi';
-        const re = new RegExp(text, gi);
-        const arr = str.match(re);
-        return arr && arr.length > 0 ? true : false;
-      } catch (err) {}
-    }
-
-    if (matchWord) {
-      return str.split(' ').some(word => {
-        if (this.caseSensitive) return word === text;
-        else return word.toLowerCase() === text.toLowerCase();
-      });
-    } else if (matchCase) {
-      return str.includes(text);
-    }
-
-    return str.toLowerCase().includes(text.toLowerCase());
-  };
-
-  const setCharacters = async (node: TextNode, newText: string) => {
-    await figma.loadFontAsync(node.getRangeFontName(0, 1) as FontName);
-    node.characters = newText;
-
-    figma.ui.postMessage({
-      type: 'replace',
-      data: node.id,
-    });
-  };
-
-  const postMessage = data => {
-    figma.ui.postMessage({
-      type: 'update-text-objects',
-      data: JSON.stringify(data),
-    });
-  };
-
-  const findPredicate = n => {
-    return n.type === 'TEXT' && n.characters != undefined && findInString(n.characters, msg.data);
-  };
-
-  const escapeRegExp = string => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  };
-
-  const clearAllTimers = () => {
-    for (var i = 0; i < timers.length; i++) {
-      clearTimeout(timers[i]);
-    }
-  };
-
-  const replace = data => {
-    let [id, findText, replaceWith, matchWord, matchCase] = data;
-
-    const node = <TextNode>figma.getNodeById(id);
-    if (!node) return;
-
-    const text = node.characters;
-    const gi = matchCase ? 'g' : 'gi';
-
-    if (matchWord || matchCase) {
-      findText = escapeRegExp(findText);
-    }
-
-    try {
-      let re = new RegExp(findText, gi);
-      let newStr = text.replace(re, replaceWith);
-      setCharacters(node, newStr);
-    } catch (err) {}
-  };
-
-  const findAll = node => {
-    let promise = new Promise((resolve, reject) => {
-      let nodes = node.findAll(findPredicate);
-      nodes = nodes.map(e => e.id);
-      if (nodes) resolve(nodes);
-      else reject([]);
-    });
-
-    return promise;
-  };
-
   switch (msg.type) {
     case 'set-selection':
       currentSelection = figma.currentPage.selection;
@@ -100,41 +114,11 @@ figma.ui.onmessage = msg => {
 
       break;
     case 'get-text-objects':
-      clearAllTimers();
-
-      let children = figma.currentPage.children;
-      if (msg.data[4]) {
-        children = figma.currentPage.selection;
+      let [str] = msg.data;
+      if (str !== undefined) {
+        if (timer) clearTimeout(timer);
+        if (str) searchFor(str, msg.data);
       }
-
-      const delayedFind = node => {
-        findAll(node).then((nodes: any) => {
-          postMessage(nodes);
-        });
-      };
-
-      // const NODE_TYPES = ['INSTANCE', 'FRAME', 'GROUP'];
-      const NODE_TYPES_GROUP = ['INSTANCE', 'GROUP', 'COMPONENT', 'FRAME'];
-
-      for (let i = 0; i < children.length; i++) {
-        let node = children[i];
-        if (findPredicate(node)) postMessage([node.id]);
-        if (NODE_TYPES_GROUP.includes(node.type)) {
-          const subChildren = node['children'];
-          for (let j = 0; j < subChildren.length; j++) {
-            const subnode = subChildren[j];
-            if (findPredicate(subnode)) postMessage([subnode.id]);
-            if (NODE_TYPES_GROUP.includes(subnode.type)) {
-              delayedFind(subnode);
-            }
-          }
-        }
-      }
-
-      figma.ui.postMessage({
-        type: 'done',
-        data: JSON.stringify({done: true}),
-      });
       break;
     case 'replace':
       replace(msg.data);
@@ -152,6 +136,4 @@ figma.ui.onmessage = msg => {
     default:
       break;
   }
-
-  //   figma.closePlugin();
 };

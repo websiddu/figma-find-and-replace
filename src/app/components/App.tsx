@@ -9,8 +9,8 @@ const App = ({}) => {
   const [textNodes, setTextNodes] = React.useState([]);
   const [currentNode, setCurrentNode] = React.useState(-1);
   const [isDirty, setIsDirty] = React.useState(false);
-  const [foundAtLeastOne, setFoundAtLeastOne] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isDone, setIsDone] = React.useState(false);
 
   const [matchWord, setMatchWord] = React.useState(false);
   const [matchCase, setMatchCase] = React.useState(false);
@@ -31,23 +31,14 @@ const App = ({}) => {
     window.onmessage = async event => {
       const {type, data} = event.data.pluginMessage;
 
-      if (type === 'update-text-objects') {
-        let newNodes = JSON.parse(data);
+      if (type === 'update-results') {
+        let newNodes = data.results;
         setTextNodes(nodes => [...nodes, ...newNodes]);
-        if (newNodes.length > 0) {
-          setFoundAtLeastOne(true);
+
+        if (data.done === true) {
+          setIsLoading(false);
+          setIsDone(true);
         }
-      }
-
-      if (type === 'done') {
-        setIsLoading(false);
-      }
-
-      if (type === 'get-text-objects') {
-        let d = JSON.parse(data);
-        setTextNodes(d);
-        setCurrentNode(0);
-        move();
       }
 
       if (type === 'replace') {
@@ -67,13 +58,6 @@ const App = ({}) => {
   }, [currentNode]);
 
   React.useEffect(() => {
-    if (foundAtLeastOne == true) setCurrentNode(0);
-    else setCurrentNode(-1);
-  }, [foundAtLeastOne]);
-
-  React.useEffect(() => {
-    if (textNodes.length == 0) {
-    }
     setCurrentNode(0);
     move();
   }, [textNodes]);
@@ -87,7 +71,6 @@ const App = ({}) => {
 
     setTextNodes([]);
     setCurrentNode(-1);
-    setFoundAtLeastOne(false);
     setIsLoading(true);
 
     if (text === '') {
@@ -255,7 +238,7 @@ const App = ({}) => {
       </div>
       <div className="row footer">
         <div className="actions">
-          {foundAtLeastOne && textNodes.length > 0 && (
+          {textNodes.length > 0 && (
             <div className="pagination">
               <div className="post-fix">
                 {textNodes.length > 0 && (
@@ -287,8 +270,10 @@ const App = ({}) => {
             </div>
           )}
 
-          {!foundAtLeastOne && isDirty && !isLoading && <div className="post-fix">No matches found</div>}
-          {isLoading && !foundAtLeastOne && <div className="post-fix">Searching...</div>}
+          {isDirty && !isLoading && textNodes.length === 0 && isDone && (
+            <div className="post-fix">No matches found</div>
+          )}
+          {isLoading && textNodes.length === 0 && <div className="post-fix">Searching...</div>}
         </div>
         <div className="actions">
           <button

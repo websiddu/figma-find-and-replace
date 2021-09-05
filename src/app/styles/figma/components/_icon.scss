@@ -274,6 +274,10 @@
   //   background-image: url('../assets/icons/warning.svg');
   // }
 
+  &--asterisk {
+    background-image: url('../assets/icons/asterisk.svg');
+  }
+
   &--back {
     background-image: url('../assets/icons/back.svg');
   }
@@ -289,12 +293,15 @@
   &--match-word {
     background-image: url('../assets/icons/match-word.svg');
   }
+
   &--match-case {
     background-image: url('../assets/icons/match-case.svg');
   }
+
   &--preserve-case {
     background-image: url('../assets/icons/preserve-case.svg');
   }
+
   &--regex {
     background-image: url('../assets/icons/regex.svg');
   }

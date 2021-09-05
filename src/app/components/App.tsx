@@ -115,6 +115,11 @@ const App = ({}) => {
     );
   };
 
+  const selectAll = () => {
+    let data = [textNodes];
+    parent.postMessage({pluginMessage: {type: 'select-all', data}}, '*');
+  };
+
   const replaceAll = () => {
     textNodes.forEach(e => {
       replace(e);
@@ -145,7 +150,6 @@ const App = ({}) => {
   };
 
   const setSelection = () => {
-    // selectionNodes
     setInSelection(!inSelection);
     if (!inSelection) {
       parent.postMessage(
@@ -265,6 +269,16 @@ const App = ({}) => {
                   disabled={textNodes.length > 0 ? false : true}
                 >
                   <div className="icon icon--forward"></div>
+                </button>
+              </Tippy>
+              <Tippy content="Select All" delay={[500, 100]}>
+                <button
+                  className="icon-button nf"
+                  onClick={selectAll}
+                  tabIndex={8}
+                  disabled={textNodes.length > 0 ? false : true}
+                >
+                  <div className="icon icon--asterisk"></div>
                 </button>
               </Tippy>
             </div>

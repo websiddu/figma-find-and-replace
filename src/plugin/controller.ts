@@ -111,7 +111,6 @@ figma.ui.onmessage = msg => {
         type: 'set-selection',
         data: JSON.stringify(currentSelection.length),
       });
-
       break;
     case 'get-text-objects':
       let [str] = msg.data;
@@ -127,6 +126,13 @@ figma.ui.onmessage = msg => {
       let nodeToGo = <SceneNode>figma.getNodeById(msg.data);
       figma.currentPage.selection = [nodeToGo];
       figma.viewport.scrollAndZoomIntoView([nodeToGo]);
+      break;
+    case 'select-all':
+      let [nodes] = msg.data;
+      if (nodes.length === 0) return;
+      const allMatches = nodes.map((node: string) => <SceneNode>figma.getNodeById(node));
+      figma.currentPage.selection = allMatches;
+      figma.viewport.scrollAndZoomIntoView(figma.currentPage.selection);
       break;
 
     case 'toast':
